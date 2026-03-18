@@ -4,12 +4,12 @@ module.exports = {
     cards: [{
         type: 'StudentSearchCard',
         source: './src/cards/StudentSearchCard',
-        title: 'StudentSearch Card',
+        title: 'Student Search Card',
         displayCardType: 'StudentSearch Card',
         description: 'This is an introductory card to the Ellucian Experience SDK',
         pageRoute: {
             route: '/',
-            excludeClickSelectors: ['a']
+            excludeClickSelectors: ['div', 'a']
         }
     }],
     page: {
