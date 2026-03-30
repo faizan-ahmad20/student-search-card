@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   makeStyles,
   Typography,
@@ -71,6 +71,13 @@ const StudentSearchCard = () => {
       // error is already captured in errorStudentInfo
     }
   };
+
+  useEffect(() => {
+    getStudentInformation({
+      firstName: filters.firstName,
+      lastName: filters.lastName,
+    });
+  }, []);
 
   const results = studentInfoResult ?? [];
 
