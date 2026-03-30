@@ -9,8 +9,14 @@ import {
   TableCell,
   TableHead,
   TableBody,
+  CircularProgress,
 } from "@ellucian/react-design-system/core";
-import { spacing40, spacing20 } from "@ellucian/react-design-system/core/styles/tokens";
+import {
+  spacing40,
+  spacing20,
+} from "@ellucian/react-design-system/core/styles/tokens";
+import useStudentInformation from "../hooks/useGetStudentsInformation.js";
+import { useData, useCardInfo } from "@ellucian/experience-extension-utils";
 
 const useStyles = makeStyles()({
   container: {
@@ -21,12 +27,7 @@ const useStyles = makeStyles()({
     margin: "10px",
     gap: "10px",
   },
-  form: {
-    // display: "grid",
-    // gridTemplateColumns: "repeat(3, 1fr)",
-    // gap: spacing40,
-    // marginBottom: spacing40,
-  },
+  form: {},
   actions: {
     display: "flex",
     justifyContent: "flex-end",
@@ -37,67 +38,41 @@ const useStyles = makeStyles()({
   },
 });
 
-// Mock student data
-const mockStudents = [
-  {
-    firstName: "John",
-    lastName: "Doe",
-    nationality: "USA",
-    gpa: 3.5,
-    course: "Computer Science",
-    status: "Active",
-    hold: "No",
-    cohort: "2023",
-  },
-  {
-    firstName: "Amit",
-    lastName: "Sharma",
-    nationality: "India",
-    gpa: 3.8,
-    course: "Engineering",
-    status: "Active",
-    hold: "Yes",
-    cohort: "2022",
-  },
-];
-
 const StudentSearchCard = () => {
+  const { cardId } = useCardInfo();
+  const { authenticatedEthosFetch } = useData();
   const { classes } = useStyles();
+
+  const {
+    getStudentInformation,
+    loadingStudentInfo,
+    errorStudentInfo,
+    studentInfoResult,
+  } = useStudentInformation(authenticatedEthosFetch, cardId);
 
   const [filters, setFilters] = useState({
     firstName: "",
     lastName: "",
-    nationality: "",
-    gpa: "",
-    course: "",
-    status: "",
-    hold: "",
-    cohort: "",
   });
-
-  const [results, setResults] = useState([]);
   const [searched, setSearched] = useState(false);
 
   const handleChange = (field) => (event) => {
-    setFilters({
-      ...filters,
-      [field]: event.target.value,
-    });
+    setFilters({ ...filters, [field]: event.target.value });
   };
 
-  const handleSearch = () => {
-    const filtered = mockStudents.filter((student) => {
-      return Object.keys(filters).every((key) => {
-        if (!filters[key]) return true;
-        return String(student[key])
-          .toLowerCase()
-          .includes(filters[key].toLowerCase());
+  const handleSearch = async () => {
+    setSearched(true);
+    try {
+      await getStudentInformation({
+        firstName: filters.firstName,
+        lastName: filters.lastName,
       });
-    });
-
-    setResults(filtered);
-    setSearched(true); // ✅ Fix 2: mark that a search has been performed
+    } catch {
+      // error is already captured in errorStudentInfo
+    }
   };
+
+  const results = studentInfoResult ?? [];
 
   return (
     <div className={classes.container}>
@@ -115,55 +90,42 @@ const StudentSearchCard = () => {
             onChange={handleChange("lastName")}
           />
         </div>
-        <div className={classes.formRow}>
-          <TextField
-            label="Nationality"
-            value={filters.nationality}
-            onChange={handleChange("nationality")}
-          />
-          <TextField
-            label="GPA"
-            value={filters.gpa}
-            onChange={handleChange("gpa")}
-          />
-        </div>
-
         <div className={classes.actions}>
-          <Button onClick={handleSearch}>Search</Button>
+          <Button onClick={handleSearch} disabled={loadingStudentInfo}>
+            {loadingStudentInfo ? <CircularProgress size={20} /> : "Search"}
+          </Button>
         </div>
       </div>
 
-      {/* ✅ Fix 2: Show no results message */}
-      {searched && results.length === 0 && (
-        <Typography>No students found matching your criteria.</Typography>
+      {/* Error state */}
+      {errorStudentInfo && (
+        <Typography color="error">{errorStudentInfo}</Typography>
       )}
+
+      {/* Empty state */}
+      {searched &&
+        !loadingStudentInfo &&
+        !errorStudentInfo &&
+        results.length === 0 && (
+          <Typography>No students found matching your criteria.</Typography>
+        )}
 
       {/* Results Table */}
       {results.length > 0 && (
         <Table className={classes.table}>
           <TableHead>
             <TableRow>
+              <TableCell>Spriden ID</TableCell>
               <TableCell>First Name</TableCell>
               <TableCell>Last Name</TableCell>
-              <TableCell>Nationality</TableCell>
-              <TableCell>GPA</TableCell>
-              <TableCell>Course</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Hold</TableCell>
-              <TableCell>Cohort</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {results.map((student, index) => (
-              <TableRow key={index}>
+              <TableRow key={`${student.spridenId}-${index}`}>
+                <TableCell>{student.spridenId}</TableCell>
                 <TableCell>{student.firstName}</TableCell>
                 <TableCell>{student.lastName}</TableCell>
-                <TableCell>{student.nationality}</TableCell>
-                <TableCell>{student.gpa}</TableCell>
-                <TableCell>{student.course}</TableCell>
-                <TableCell>{student.status}</TableCell>
-                <TableCell>{student.hold}</TableCell>
-                <TableCell>{student.cohort}</TableCell>
               </TableRow>
             ))}
           </TableBody>
