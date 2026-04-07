@@ -6,12 +6,12 @@ const useStudentInformation = (authenticatedEthosFetch, cardId) => {
   const [studentInfoResult, setStudentInfoResult] = useState(null);
 
   const getStudentInformation = useCallback(
-    async ({ firstName, lastName }) => {
+    async ({ firstName, lastName, gender, gpa }) => {
       setLoadingStudentInfo(true);
       setErrorStudentInfo(null);
 
       try {
-        const url = `fa-get-student-information?cardId=${encodeURIComponent(cardId)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`;
+        const url = `fa-get-student-information?cardId=${encodeURIComponent(cardId)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&gender=${encodeURIComponent(gender)}&gpa=${encodeURIComponent(gpa)}`;
         const response = await authenticatedEthosFetch(url, {
           method: "GET",
           headers: {

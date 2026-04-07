@@ -10,6 +10,7 @@ import {
   TableHead,
   TableBody,
   CircularProgress,
+  SelectionMenu,
 } from "@ellucian/react-design-system/core";
 import {
   spacing40,
@@ -53,11 +54,17 @@ const StudentSearchCard = () => {
   const [filters, setFilters] = useState({
     firstName: "",
     lastName: "",
+    gender: "",
+    gpa: "",
   });
   const [searched, setSearched] = useState(false);
 
   const handleChange = (field) => (event) => {
-    setFilters({ ...filters, [field]: event.target.value });
+    // Check if the input is a standard event or a direct value
+    const value = event?.target ? event.target.value : event;
+    console.log(value);
+
+    setFilters({ ...filters, [field]: value });
   };
 
   const handleSearch = async () => {
@@ -66,6 +73,8 @@ const StudentSearchCard = () => {
       await getStudentInformation({
         firstName: filters.firstName,
         lastName: filters.lastName,
+        gender: filters.gender,
+        gpa: filters.gpa,
       });
     } catch {
       // error is already captured in errorStudentInfo
@@ -76,6 +85,8 @@ const StudentSearchCard = () => {
     getStudentInformation({
       firstName: filters.firstName,
       lastName: filters.lastName,
+      gender: filters.gender,
+      gpa: filters.gpa,
     });
   }, []);
 
@@ -95,6 +106,36 @@ const StudentSearchCard = () => {
             label="Last Name"
             value={filters.lastName}
             onChange={handleChange("lastName")}
+          />
+        </div>
+        <div className={classes.formRow}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <Typography>Gender: </Typography>
+            <SelectionMenu
+              label="Gender"
+              value={filters.gender}
+              onChange={handleChange("gender")}
+              native
+              style={{
+                minWidth: "80px",
+              }}
+            >
+              <option value="">All</option>
+              <option value="M">M</option>
+              <option value="F">F</option>
+            </SelectionMenu>
+          </div>
+          <TextField
+            label="GPA"
+            value={filters.gpa}
+            onChange={handleChange("gpa")}
           />
         </div>
         <div className={classes.actions}>
@@ -125,6 +166,8 @@ const StudentSearchCard = () => {
               <TableCell>Spriden ID</TableCell>
               <TableCell>First Name</TableCell>
               <TableCell>Last Name</TableCell>
+              <TableCell>Gender</TableCell>
+              <TableCell>GPA</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -133,6 +176,8 @@ const StudentSearchCard = () => {
                 <TableCell>{student.spridenId}</TableCell>
                 <TableCell>{student.firstName}</TableCell>
                 <TableCell>{student.lastName}</TableCell>
+                <TableCell>{student.sex}</TableCell>
+                <TableCell>{student.gpa}</TableCell>
               </TableRow>
             ))}
           </TableBody>
